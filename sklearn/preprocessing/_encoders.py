@@ -1303,13 +1303,15 @@ class OrdinalEncoder(OneToOneFeatureMixin, _BaseEncoder):
 
         - If `category_unknown`, a new category will be added in the first position
           (i.e. with the ordinal encoding `0`) for each feature, and any unknown values
-          will be encoded to `0`. Note: if there are no missing values in the feature when
-          fitting, when transforming, any missing values will be treated as unknown values.
-          The category name will be `-1` if the categories are numeric, or `unk` otherwise.
+          will be encoded to `0`. Note: if there are no missing values in a feature when
+          calling :meth:`fit`, then :meth:`transform` will treat any missing values as
+          unknown values. In :meth:`inverse_transform`, an unknown category will be
+          denoted as `-1` if the categories are numeric or `unk` otherwise.
 
         - If `missing`, unknown categories will be treated the same as missing values,
           and will be assigned same encoded value as defined by `encoded_missing_value`.
-          No new categories will be created.
+          No new categories will be created. In :meth:`inverse_transform`, an unknown
+          category will be denoted as `np.nan`.
 
         .. versionadded:: 0.24
 
