@@ -1290,12 +1290,26 @@ class OrdinalEncoder(OneToOneFeatureMixin, _BaseEncoder):
 
         .. versionadded:: 0.24
 
-    unknown_value : int or np.nan, default=None
+    unknown_value : int, np.nan or {'category_unknown', 'missing'}, default=None
+        Defines how to transform values that were _not_ present during fitting.
         When the parameter handle_unknown is set to 'use_encoded_value', this
         parameter is required and will set the encoded value of unknown
-        categories. It has to be distinct from the values used to encode any of
-        the categories in `fit`. If set to np.nan, the `dtype` parameter must
-        be a float dtype.
+        categories.
+
+        - If `int`, it has to be distinct from the values used to encode any of the
+          categories in `fit`.
+
+        - If `np.nan`, the `dtype` parameter must be a float dtype.
+
+        - If `category_unknown`, a new category will be added in the first position
+          (i.e. with the ordinal encoding `0`) for each feature, and any unknown values
+          will be encoded to `0`. Note: if there are no missing values in the feature when
+          fitting, when transforming, any missing values will be treated as unknown values.
+          The category name will be `-1` if the categories are numeric, or `unk` otherwise.
+
+        - If `missing`, unknown categories will be treated the same as missing values,
+          and will be assigned same encoded value as defined by `encoded_missing_value`.
+          No new categories will be created.
 
         .. versionadded:: 0.24
 
@@ -1414,6 +1428,34 @@ class OrdinalEncoder(OneToOneFeatureMixin, _BaseEncoder):
     array([[ 1.,  0.],
            [ 0.,  1.],
            [ 0., -1.]])
+
+    You can use the parameters `handle_unknown` and `unknown_value` to define
+    how to handle unknown categories after fitting.
+
+    >>> X = [['Cat', 1], ['Dog', 3], ['Cat', 2]]
+    >>> enc.set_params(handle_unknown='use_encoded_value', unknown_value=-1).fit(X)
+    >>> enc.categories_
+    [array(['Cat', 'Dog'], dtype=object), array([1, 2, 3], dtype=object)]
+    >>> enc.transform([['Cat', 4], ['Bird', 1]])
+    array([[ 0.,  -1.],
+           [ -1.,  0.]])
+    >>> X = [['Cat', 1], ['Dog', 3], ['Cat', np.nan]]
+    >>> enc.set_params(handle_unknown='use_encoded_value', unknown_value='category_unknown').fit(X)
+    >>> enc.categories_
+    [array(['unk', 'Cat', 'Dog'], dtype=object), array(['unk', 1, 2, 3], dtype=object)]
+    >>> enc.transform([['Cat', 4], ['Dog', 1], ['Horse', np.nan]])
+    array([[ 1.,  0.],
+           [ 2.,  1.],
+           [ 0.,  nan]])
+    >>> X = [['Cat', 1], ['Dog', 3], ['Cat', np.nan]]
+    >>> enc.set_params(handle_unknown='use_encoded_value', unknown_value='missing').fit(X)
+    >>> enc.categories_
+    [array(['Cat', 'Dog'], dtype=object), array([1, 2, 3], dtype=object)]
+    >>> enc.transform([['Cat', 4], ['Dog', 1], ['Horse', 3], [np.nan, 2]])
+    array([[ 0., nan],
+           [ 1.,  0.],
+           [nan,  1.],
+           [nan,  nan]])
 
     Infrequent categories are enabled by setting `max_categories` or `min_frequency`.
     In the following example, "a" and "d" are considered infrequent and grouped
