@@ -1520,6 +1520,29 @@ class OrdinalEncoder(OneToOneFeatureMixin, _BaseEncoder):
         )
         self._missing_indices = fit_results["missing_indices"]
 
+        if self.unknown_value == "category_unknown":
+            for i, cats in enumerate(self.categories_):
+                # If the cats are numerical, can't insert a string into the array
+                # so use -1 as the category name instead. This doesn't collide with
+                # encoded_missing_value when that is set to -1 since this is the category
+                # *name*, not the encoded value.
+                new_cat = "unk" if cats.dtype.kind in "OUS" else -1
+                self.categories_[i] = np.insert(cats, 0, new_cat)
+
+            # Since we've inserted a "new" category here, the missing values
+            # indices must be incremented by one to account for the new category
+            for cat_idx, missing_idx in self._missing_indices.items():
+                self._missing_indices[cat_idx] = missing_idx + 1
+
+        # In order to handle missing values down the line, we need to add them to
+        # the categories during fit, even if there aren't any missing values.
+        elif self.unknown_value == "missing":
+            for i, cats in enumerate(self.categories_):
+                if not is_scalar_nan(self.categories_[i][-1]):
+                    self.categories_[i] = np.append(cats, np.nan)
+                    self._missing_indices[i] = cats.size
+
+
         cardinalities = [len(categories) for categories in self.categories_]
         if self._infrequent_enabled:
             # Cardinality decreases because the infrequent categories are grouped
