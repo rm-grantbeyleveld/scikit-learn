@@ -1559,7 +1559,7 @@ class OrdinalEncoder(OneToOneFeatureMixin, _BaseEncoder):
 
         if self.handle_unknown == "use_encoded_value":
             for cardinality in cardinalities:
-                if 0 <= self.unknown_value < cardinality:
+                if not isinstance(self.unknown_value, str) and 0 <= self.unknown_value < cardinality:
                     raise ValueError(
                         "The used value for unknown_value "
                         f"{self.unknown_value} is one of the "
