@@ -1497,10 +1497,10 @@ class OrdinalEncoder(OneToOneFeatureMixin, _BaseEncoder):
                         "parameter should be "
                         f"a float dtype. Got {self.dtype}."
                     )
-            elif not isinstance(self.unknown_value, numbers.Integral):
+            elif not isinstance(self.unknown_value, (numbers.Integral, str)):
                 raise TypeError(
-                    "unknown_value should be an integer or "
-                    "np.nan when "
+                    "unknown_value should be an integer, np.nan, "
+                    "or one of ['first', 'last'] when "
                     "handle_unknown is 'use_encoded_value', "
                     f"got {self.unknown_value}."
                 )
