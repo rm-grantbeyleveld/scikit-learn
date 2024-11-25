@@ -235,6 +235,8 @@ class _BaseEncoder(TransformerMixin, BaseEstimator):
                         # Cast Xi to an object dtype to prevent truncation
                         # when setting invalid values.
                         Xi = Xi.astype("O")
+                    elif self.categories_[i].dtype.kind == "f" and Xi.dtype.kind != "f":
+                        Xi = Xi.astype("f")
                     else:
                         Xi = Xi.copy()
 
@@ -1306,7 +1308,7 @@ class OrdinalEncoder(OneToOneFeatureMixin, _BaseEncoder):
            values will be encoded to `0`. Note: if there are no missing values in a
            feature when calling :meth:`fit`, then :meth:`transform` will treat any
            missing values as unknown values. In :meth:`inverse_transform`, an
-           unknown category will be denoted as `-1` if the categories are numeric
+           unknown category will be denoted as `-inf` if the categories are numeric
            or `unk` otherwise.
 
          - If `missing`, unknown categories will be treated the same as missing
@@ -1547,12 +1549,15 @@ class OrdinalEncoder(OneToOneFeatureMixin, _BaseEncoder):
             Fitted encoder.
         """
         if self.handle_unknown == "use_encoded_value":
-            if is_scalar_nan(self.unknown_value):
+            if (
+                is_scalar_nan(self.unknown_value)
+                or self.unknown_value == "category_unknown"
+            ):
                 if np.dtype(self.dtype).kind != "f":
                     raise ValueError(
-                        "When unknown_value is np.nan, the dtype "
-                        "parameter should be "
-                        f"a float dtype. Got {self.dtype}."
+                        "When unknown_value is np.nan or 'category_unknown', "
+                        "the dtype parameter should be a float dtype. "
+                        f"Got {self.dtype}."
                     )
             elif not isinstance(self.unknown_value, (numbers.Integral, str)):
                 raise TypeError(
@@ -1583,13 +1588,19 @@ class OrdinalEncoder(OneToOneFeatureMixin, _BaseEncoder):
                 # so use -1 as the category name instead. This doesn't collide with
                 # encoded_missing_value when that is set to -1 since this is the
                 # category *name*, not the encoded value.
-                new_cat = "unk" if cats.dtype.kind in "OUS" else -1
+
+                if cats.dtype.kind in "OUS":
+                    new_cat = "unk"
+                else:
+                    new_cat = -np.inf
+                    cats = cats.astype(float)
                 self.categories_[i] = np.insert(cats, 0, new_cat)
 
             # Since we've inserted a "new" category here, the missing values
             # indices must be incremented by one to account for the new category.
             for cat_idx, missing_idx in self._missing_indices.items():
-                self._missing_indices[cat_idx] = missing_idx + 1
+                # self._missing_indices[cat_idx] = missing_idx + 1
+                self._missing_indices[cat_idx] = 0
 
         # In order to handle missing values down the line, we need to add them to
         # the categories during fit, even if there aren't any missing values.
