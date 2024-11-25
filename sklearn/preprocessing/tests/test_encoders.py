@@ -749,31 +749,34 @@ def test_ordinal_encoder_raise_categories_shape():
     "X, X_exp, X_test, X_test_exp",
     [
         (
-                np.array([["Cat", 5], ["Dog", 4]]),
-                np.array([[1.0, 2.0], [2.0, 1.0]]),
-                np.array([["Cat", 1], ["Fish", 5]]),
-                np.array([[1.0, 0.0], [0.0, 2.0]])
+            np.array([["Cat", 5], ["Dog", 4]]),
+            np.array([[1.0, 2.0], [2.0, 1.0]]),
+            np.array([["Cat", 1], ["Fish", 5]]),
+            np.array([[1.0, 0.0], [0.0, 2.0]]),
         ),
         (
-                np.array([[40, 5], [50, 4]]),
-                np.array([[1.0, 2.0], [2.0, 1.0]]),
-                np.array([[40, 6], [30, 5], [50, np.nan]]),
-                np.array([[1.0, 0.0], [0.0, 2.0], [2.0, 0.0]])
+            np.array([[40, 5], [50, 4]]),
+            np.array([[1.0, 2.0], [2.0, 1.0]]),
+            np.array([[40, 6], [30, 5], [50, np.nan]]),
+            np.array([[1.0, 0.0], [0.0, 2.0], [2.0, 0.0]]),
         ),
         (
-                np.array([["Cat", "Wednesday"], ["Dog", "Tuesday"]], dtype=object),
-                np.array([[1.0, 2.0], [2.0, 1.0]]),
-                np.array([["Cat", "Thursday"], ["Bird", "Wednesday"]], dtype=object),
-                np.array([[1.0, 0.0], [0.0, 2.0]])
+            np.array([["Cat", "Wednesday"], ["Dog", "Tuesday"]], dtype=object),
+            np.array([[1.0, 2.0], [2.0, 1.0]]),
+            np.array([["Cat", "Thursday"], ["Bird", "Wednesday"]], dtype=object),
+            np.array([[1.0, 0.0], [0.0, 2.0]]),
         ),
     ],
     ids=["mixed", "numeric", "object"],
 )
 def test_ordinal_encoder_unknown_value_new_cat(X, X_exp, X_test, X_test_exp):
-    enc = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value="category_unknown")
+    enc = OrdinalEncoder(
+        handle_unknown="use_encoded_value", unknown_value="category_unknown"
+    )
     enc.fit(X)
     assert_array_equal(enc.transform(X), X_exp)
     assert_array_equal(enc.transform(X_test), X_test_exp)
+
 
 @pytest.mark.parametrize(
     "X, X_exp, X_test, X_test_exp",
@@ -782,19 +785,19 @@ def test_ordinal_encoder_unknown_value_new_cat(X, X_exp, X_test, X_test_exp):
             np.array([["Cat", 5], ["Dog", 4]]),
             np.array([[0.0, 1.0], [1.0, 0.0]]),
             np.array([["Cat", 1], ["Fish", 5]]),
-            np.array([[0.0, np.nan], [np.nan, 1.0]])
+            np.array([[0.0, np.nan], [np.nan, 1.0]]),
         ),
         (
             np.array([[40, 5], [50, 4]]),
             np.array([[0.0, 1.0], [1.0, 0.0]]),
             np.array([[40, 6], [30, 5], [50, np.nan]]),
-            np.array([[0.0, np.nan], [np.nan, 1.0], [1.0, np.nan]])
+            np.array([[0.0, np.nan], [np.nan, 1.0], [1.0, np.nan]]),
         ),
         (
             np.array([["Cat", "Wednesday"], ["Dog", "Tuesday"]], dtype=object),
             np.array([[0.0, 1.0], [1.0, 0.0]]),
             np.array([["Cat", "Thursday"], ["Bird", "Wednesday"]], dtype=object),
-            np.array([[0.0, np.nan], [np.nan, 1.0]])
+            np.array([[0.0, np.nan], [np.nan, 1.0]]),
         ),
     ],
     ids=["mixed", "numeric", "object"],
