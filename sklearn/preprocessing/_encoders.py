@@ -1442,7 +1442,7 @@ class OrdinalEncoder(OneToOneFeatureMixin, _BaseEncoder):
         "dtype": "no_validation",  # validation delegated to numpy
         "encoded_missing_value": [Integral, type(np.nan)],
         "handle_unknown": [StrOptions({"error", "use_encoded_value"})],
-        "unknown_value": [Integral, type(np.nan), None],
+        "unknown_value": [Integral, type(np.nan), StrOptions({"category_unknown", "missing"}), None],
         "max_categories": [Interval(Integral, 1, None, closed="left"), None],
         "min_frequency": [
             Interval(Integral, 1, None, closed="left"),
