@@ -1631,7 +1631,14 @@ class OrdinalEncoder(OneToOneFeatureMixin, _BaseEncoder):
 
         # create separate category for unknown values
         if self.handle_unknown == "use_encoded_value":
-            X_trans[~X_mask] = self.unknown_value
+            if self.unknown_value == "category_unknown":
+                unknown_value = 0
+            elif self.unknown_value == "missing":
+                unknown_value = self.encoded_missing_value
+            else:
+                unknown_value = self.unknown_value
+            X_trans[~X_mask] = unknown_value
+
         return X_trans
 
     def inverse_transform(self, X):
